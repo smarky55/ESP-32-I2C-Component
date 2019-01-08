@@ -56,7 +56,7 @@ public:
 	 * @brief Write bites to a slave over established I2C bus
 	 *
 	 * @param slave_addr	Address of device we want to write to
-	 * @param data			Byte array of data to sent to slave
+	 * @param data			Buffer of data to sent to slave
 	 * @param len			Length of data array
 	 *
 	 * @return
@@ -66,7 +66,7 @@ public:
 	 *		- ESP_ERR_INVALID_STATE	I2C driver not installed or not in master mode.
 	 *		- ESP_ERR_TIMEOUT 		Operation timeout because the bus is busy.
 	 */
-	esp_err_t write(uint16_t slave_addr, uint8_t* data, size_t len);
+	esp_err_t write(uint16_t slave_addr, void* data, size_t len);
 
 	/**
 	 * @brief Wrapper to simplify writing to a single 8 bit register
@@ -86,7 +86,7 @@ public:
 
 
 	/**
-	 * @breif Read data from slave device on I2C bus
+	 * @brief Read data from slave device on I2C bus
 	 *
 	 * @param slave_addr	Address of slave device to read from
 	 * @param write_data	Initial data to write to slave such as the address we want to read
@@ -101,7 +101,7 @@ public:
 	 *		- ESP_ERR_INVALID_STATE	I2C driver not installed or not in master mode.
 	 *		- ESP_ERR_TIMEOUT 		Operation timeout because the bus is busy.
 	 */
-	esp_err_t read(uint16_t slave_addr, uint8_t* write_data, size_t write_len, uint8_t* read_data, size_t read_len);
+	esp_err_t read(uint16_t slave_addr, void* write_data, size_t write_len, void* read_data, size_t read_len);
 
 
 	/**

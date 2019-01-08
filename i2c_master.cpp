@@ -55,18 +55,17 @@ esp_err_t i2c_master::init(i2c_port_t i2c_num, gpio_num_t sda_io_num,
 	return i2c_driver_install(i2c_num, I2C_MODE_MASTER, 0, 0, 0);
 }
 
-esp_err_t i2c_master::write(uint16_t slave_addr, uint8_t* data,
-		size_t len) {
+esp_err_t i2c_master::write(uint16_t slave_addr, void* data, size_t len) {
 
 	if(!isInstalled){
 		ESP_LOGE(TAG, "Attempt to use I2C bus without initialising driver!");
 		return ESP_ERR_INVALID_STATE;
 	}
-
+	uint8_t* bytes = static_cast<uint8_t*>(data);
 	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 	i2c_master_start(cmd);
 	i2c_master_write_byte(cmd, (slave_addr << 1) | I2C_MASTER_WRITE, true);
-	if(len > 0 && data != nullptr) i2c_master_write(cmd, data, len, true);
+	if(len > 0 && data != nullptr) i2c_master_write(cmd, bytes, len, true);
 	i2c_master_stop(cmd);
 
 	esp_err_t ret = i2c_master_cmd_begin(i2c_num, cmd, 1000/portTICK_RATE_MS);
@@ -83,22 +82,23 @@ esp_err_t i2c_master::write_register(uint16_t slave_addr, uint8_t reg_addr,
 	return write(slave_addr, buff, 2);
 }
 
-esp_err_t i2c_master::read(uint16_t slave_addr, uint8_t* write_data,
-		size_t write_len, uint8_t* read_data, size_t read_len) {
+esp_err_t i2c_master::read(uint16_t slave_addr, void* write_data,
+		size_t write_len, void* read_data, size_t read_len) {
 
 	if(!isInstalled){
 		ESP_LOGE(TAG, "Attempt to use I2C bus without initialising driver!");
 		return ESP_ERR_INVALID_STATE;
 	}
-
+	uint8_t* write_bytes = static_cast<uint8_t*>(write_data);
+	uint8_t* read_bytes = static_cast<uint8_t*>(read_data);
 	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 	i2c_master_start(cmd);
 	i2c_master_write_byte(cmd, (slave_addr << 1) | I2C_MASTER_WRITE, true);
-	if(write_len > 0 && write_data != nullptr) i2c_master_write(cmd, write_data, write_len, true);
+	if(write_len > 0 && write_data != nullptr) i2c_master_write(cmd, write_bytes, write_len, true);
 	i2c_master_start(cmd);
 	i2c_master_write_byte(cmd, (slave_addr << 1) | I2C_MASTER_READ, true);
-	if(read_len > 1) i2c_master_read(cmd, read_data, read_len-1, I2C_MASTER_ACK);
-	if(read_len > 0) i2c_master_read_byte(cmd, read_data + (read_len - 1), I2C_MASTER_NACK);
+	if(read_len > 1) i2c_master_read(cmd, read_bytes, read_len-1, I2C_MASTER_ACK);
+	if(read_len > 0) i2c_master_read_byte(cmd, read_bytes + (read_len - 1), I2C_MASTER_NACK);
 	i2c_master_stop(cmd);
 
 	esp_err_t ret = i2c_master_cmd_begin(i2c_num, cmd, 1000/portTICK_RATE_MS);
